@@ -14,8 +14,8 @@ smart contracts are typically written in a high-level language, such as solidity
 
 ## introduction to ethereum high-level languages
 
-the ethereum contract abi
+## the ethereum contract abi
 
-gas considerations
+## gas considerations
 
-conclusions
+## conclusions
