@@ -48,5 +48,24 @@ Contract JSON ABI
 
 ## gas considerations
 
+Avoid Dynamically Sized Arrays
+Any loop through a dynamically sized array where a function performs operations on each element or searches for a particular element introduces the risk of using too much gas. Indeed, the contract may run out of gas before finding the desired result, or before acting on every element, thus wasting time and ether without giving any result at all.
 
-## conclusions
+Avoid Calls to Other Contracts
+Calling other contracts, especially when the gas cost of their functions is not known, introduces the risk of running out of gas. Avoid using libraries that are not well tested and broadly used. The less scrutiny a library has received from other programmers, the greater the risk of using it.
+
+Estimating Gas Cost
+If you need to estimate the gas necessary to execute a certain method of a contract considering its arguments, you could use the following procedure:
+
+var contract = web3.eth.contract(abi).at(address);
+var gasEstimate = contract.myAweSomeMethod.estimateGas(arg1, arg2,
+    {from: account});
+gasEstimate will tell you the number of gas units needed for its execution. It is an estimate because of the Turing completeness of the EVM—it is relatively trivial to create a function that will take vastly different amounts of gas to execute different calls. Even production code can change execution paths in subtle ways, resulting in hugely different gas costs from one call to the next. However, most functions are sensible and estimateGas will give a good estimate most of the time.
+
+To obtain the gas price from the network you can use:
+
+var gasPrice = web3.eth.getGasPrice();
+And from there you can estimate the gas cost:
+
+var gasCostInEther = web3.utils.fromWei((gasEstimate * gasPrice), 'ether');
+
