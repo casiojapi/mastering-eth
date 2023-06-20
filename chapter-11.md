@@ -40,4 +40,32 @@ Once the data is available in a smart contract’s storage, it can be accessed b
 
 The three main ways to set up an oracle can be categorized as request–response, publish-subscribe, and immediate-read.
 
+### immediate-read
 
+Starting with the simplest, immediate-read oracles are those that provide data that is only needed for an immediate decision, like "What is the address for ethereumbook.info?" or "Is this person over 18?" Those wishing to query this kind of data tend to do so on a "just-in-time" basis; the lookup is done when the information is needed and possibly never again. Examples of such oracles include those that hold data about or issued by organizations, such as academic certificates, dial codes, institutional memberships, airport identifiers, self-sovereign IDs, etc. This type of oracle stores data once in its contract storage, whence any other smart contract can look it up using a request call to the oracle contract. It may be updated. The data in the oracle’s storage is also available for direct lookup by blockchain-enabled (i.e., Ethereum client–connected) applications without having to go through the palaver and incurring the gas costs of issuing a transaction. A shop wanting to check the age of a customer wishing to purchase alcohol could use an oracle in this way. This type of oracle is attractive to an organization or company that might otherwise have to run and maintain servers to answer such data requests. Note that the data stored by the oracle is likely not to be the raw data that the oracle is serving, e.g., for efficiency or privacy reasons. A university might set up an oracle for the certificates of academic achievement of past students. However, storing the full details of the certificates (which could run to pages of courses taken and grades achieved) would be excessive. Instead, a hash of the certificate is sufficient. Likewise, a government might wish to put citizen IDs onto the Ethereum platform, where clearly the details included need to be kept private. Again, hashing the data (more carefully, in Merkle trees with salts) and only storing the root hash in the smart contract’s storage would be an efficient way to organize such a service.
+
+### publish-subscribe
+
+The next setup is publish–subscribe, where an oracle that effectively provides a broadcast service for data that is expected to change (perhaps both regularly and frequently) is either polled by a smart contract on-chain, or watched by an off-chain daemon for updates. This category has a pattern similar to RSS feeds, WebSub, and the like, where the oracle is updated with new information and a flag signals that new data is available to those who consider themselves "subscribed." Interested parties must either poll the oracle to check whether the latest information has changed, or listen for updates to oracle contracts and act when they occur. Examples include price feeds, weather information, economic or social statistics, traffic data, etc. Polling is very inefficient in the world of web servers, but not so in the peer-to-peer context of blockchain platforms: Ethereum clients have to keep up with all state changes, including changes to contract storage, so polling for data changes is a local call to a synced client. Ethereum event logs make it particularly easy for applications to look out for oracle updates, and so this pattern can in some ways even be considered a "push" service. However, if the polling is done from a smart contract, which might be necessary for some decentralized applications (e.g., where activation incentives are not possible), then significant gas expenditure may be incurred.
+
+### request-response
+
+The request–response category is the most complicated: this is where the data space is too huge to be stored in a smart contract and users are expected to only need a small part of the overall dataset at a time. It is also an applicable model for data provider businesses. In practical terms, such an oracle might be implemented as a system of on-chain smart contracts and off-chain infrastructure used to monitor requests and retrieve and return data. A request for data from a decentralized application would typically be an asynchronous process involving a number of steps. In this pattern, firstly, an EOA transacts with a decentralized application, resulting in an interaction with a function defined in the oracle smart contract. This function initiates the request to the oracle, with the associated arguments detailing the data requested in addition to supplementary information that might include callback functions and scheduling parameters. Once this transaction has been validated, the oracle request can be observed as an EVM event emitted by the oracle contract, or as a state change; the arguments can be retrieved and used to perform the actual query of the off-chain data source. The oracle may also require payment for processing the request, gas payment for the callback, and permissions to access the requested data. Finally, the resulting data is signed by the oracle owner, attesting to the validity of the data at a given time, and delivered in a transaction to the decentralized application that made the request—either directly or via the oracle contract. Depending on the scheduling parameters, the oracle may broadcast further transactions updating the data at regular intervals (e.g., end-of-day pricing information).
+
+RESUMEN PORQUE LO DE ARRIBA ES UN BOLONQUI:
+
+The steps for a request–response oracle may be summarized as follows:
+
+Receive a query from a DApp.
+
+Parse the query.
+
+Check that payment and data access permissions are provided.
+
+Retrieve relevant data from an off-chain source (and encrypt it if necessary).
+
+Sign the transaction(s) with the data included.
+
+Broadcast the transaction(s) to the network.
+
+Schedule any further necessary transactions, such as notifications, etc.
